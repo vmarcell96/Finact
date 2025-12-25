@@ -1,40 +1,78 @@
-import { useState } from "react";
-import { getDailyPerformance } from "../services/alphaVantageService";
+import { useEffect, useState } from "react";
 import "../App.css";
 import { createClient } from "@supabase/supabase-js";
+import {
+  AddStock,
+  FetchWatchlist,
+  RemoveStock,
+} from "../services/supabaseWatchlistService";
+import { getDailyPerformance } from "../services/alphaVantageService";
 
 type StockListParams = {
   userId: string | null;
 };
 
+type Stock = {
+  id: string;
+  user_id: string;
+  symbol: string;
+  perf: number | null;
+};
+
 export default function StockList({ userId }: StockListParams) {
   const [symbol, setSymbol] = useState("");
   const [error, setError] = useState("");
-  const [performance, setPerformance] = useState<number | null>(null);
+  const [stocks, setStocks] = useState<Stock[]>([]);
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supaAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const supabase = createClient(supabaseUrl, supaAnonKey);
 
+  async function handleFetchStocks() {
+    const data = await FetchWatchlist(supabase, userId);
+    setStocks(data);
+  }
+
   async function handleAddStock(e) {
     e.preventDefault();
-    await supabase.from("watchlist").insert({ symbol, user_id: userId });
 
     setError("");
-    setPerformance(null);
 
-    try {
-      const perf = await getDailyPerformance(symbol.toUpperCase());
-      if (!perf) {
-        setError("No stock data loaded");
-        return null;
-      }
+    const ticker = symbol.toUpperCase();
+    await AddStock(supabase, userId, ticker);
 
-      setPerformance(perf);
-    } catch (error) {
-      setError(`An error occurred: ${error}`);
-    }
+    setSymbol("");
+    handleFetchStocks();
   }
+
+  async function handleRemoveStock(id) {
+    await RemoveStock(supabase, id);
+    handleFetchStocks();
+  }
+
+  async function loadPerformances() {
+    if (!stocks) {
+      return;
+    }
+
+    const updated = await Promise.all(
+      stocks.map(async (stock: Stock) => ({
+        ...stock,
+        perf: await getDailyPerformance(stock.symbol),
+      }))
+    );
+
+    setStocks(updated);
+  }
+
+  useEffect(() => {
+    if (userId) handleFetchStocks();
+  }, [userId]);
+
+  useEffect(() => {
+    if (stocks.length) loadPerformances();
+  }, [stocks.length]);
+
   return (
     <div>
       <form className="stock-form stock-list" onSubmit={handleAddStock}>
