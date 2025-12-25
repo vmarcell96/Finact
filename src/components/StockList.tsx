@@ -7,6 +7,7 @@ import {
   RemoveStock,
 } from "../services/supabaseWatchlistService";
 import { getDailyPerformance } from "../services/alphaVantageService";
+import { useSession } from "@clerk/clerk-react";
 
 type StockListParams = {
   userId: string | null;
@@ -20,13 +21,19 @@ type Stock = {
 };
 
 export default function StockList({ userId }: StockListParams) {
+  const { session } = useSession();
   const [symbol, setSymbol] = useState("");
   const [error, setError] = useState("");
   const [stocks, setStocks] = useState<Stock[]>([]);
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supaAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const supabase = createClient(supabaseUrl, supaAnonKey);
+  const supabase = createClient(supabaseUrl, supaAnonKey, {
+    accessToken: () =>
+      session
+        ? session.getToken({ template: "supabase" })
+        : Promise.resolve(null),
+  });
 
   async function handleFetchStocks() {
     const data = await FetchWatchlist(supabase, userId);
