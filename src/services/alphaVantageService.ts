@@ -24,5 +24,23 @@ export async function getDailyPerformance(ticker) {
     symbol: ticker,
   });
 
-  return json;
+  const timeSeries = json["Time Series (Daily)"];
+
+  if (!timeSeries) {
+    return null;
+  }
+
+  const [latestDate, previousDate] = Object.keys(timeSeries);
+
+  if (!latestDate || !previousDate) {
+    return null;
+  }
+
+  const latestClose = parseFloat(timeSeries[latestDate]["4. close"]);
+  const previousClose = parseFloat(timeSeries[previousDate]["4. close"]);
+
+  //daily performance
+  const performance = ((latestClose / previousClose - 1) * 100).toFixed(2);
+
+  return performance;
 }
