@@ -11,21 +11,31 @@ import StockList from "./components/StockList";
 function App() {
   const { user } = useUser();
   return (
-    <header>
+    <div className="app-container">
+      <header>
+        <h1>Finact</h1>
+        <h3>Track your favourite stocks</h3>
+      </header>
       <SignedOut>
-        <SignInButton />
+        <div>
+          <p>Login to manage your stocks!</p>
+          <SignInButton />
+        </div>
       </SignedOut>
       <SignedIn>
         {user ? (
           <>
-            <UserButton />
+            <div className="user-header">
+              <UserButton />
+              <p>Hello, {user.firstName || user.username || "User"}!</p>
+            </div>
             <StockList userId={user?.id ?? null}></StockList>
           </>
         ) : (
           <p>Loading user ...</p>
         )}
       </SignedIn>
-    </header>
+    </div>
   );
 }
 

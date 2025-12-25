@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { getDailyPerformance } from "../services/alphaVantageService";
+import "../App.css";
+import { createClient } from "@supabase/supabase-js";
 
 type StockListParams = {
   userId: string | null;
@@ -10,8 +12,14 @@ export default function StockList({ userId }: StockListParams) {
   const [error, setError] = useState("");
   const [performance, setPerformance] = useState<number | null>(null);
 
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supaAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const supabase = createClient(supabaseUrl, supaAnonKey);
+
   async function handleAddStock(e) {
     e.preventDefault();
+    await supabase.from("watchlist").insert({ symbol, user_id: userId });
+
     setError("");
     setPerformance(null);
 
@@ -29,7 +37,7 @@ export default function StockList({ userId }: StockListParams) {
   }
   return (
     <div>
-      <form onSubmit={handleAddStock}>
+      <form className="stock-form stock-list" onSubmit={handleAddStock}>
         <input
           value={symbol}
           onChange={(e) => setSymbol(e.target.value)}
