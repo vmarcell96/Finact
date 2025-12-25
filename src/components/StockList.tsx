@@ -30,7 +30,8 @@ export default function StockList({ userId }: StockListParams) {
 
   async function handleFetchStocks() {
     const data = await FetchWatchlist(supabase, userId);
-    setStocks(data);
+    const stocksWithPerf = data.map((stock) => ({ ...stock, perf: null }));
+    setStocks(stocksWithPerf);
   }
 
   async function handleAddStock(e) {
@@ -81,15 +82,33 @@ export default function StockList({ userId }: StockListParams) {
           onChange={(e) => setSymbol(e.target.value)}
           placeholder="AAPL"
         />
-        <button>Check</button>
-
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {performance && (
-          <p style={{ color: performance > 0 ? "green" : "red" }}>
-            {performance}%
-          </p>
-        )}
+        <button>+</button>
       </form>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <ul className="stock-list">
+        {stocks.map((stock) => {
+          const perfColor =
+            stock.perf === null ? "black" : stock.perf >= 0 ? "green" : "red";
+          return (
+            <li key={stock.id}>
+              <span>
+                <strong>{stock.symbol}</strong>{" "}
+                <span style={{ color: perfColor }}>
+                  {stock.perf ? `${stock.perf}%` : "…"}
+                </span>
+              </span>
+              <button
+                className="remove-btn"
+                onClick={() => handleRemoveStock(stock.id)}
+              >
+                ✕
+              </button>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

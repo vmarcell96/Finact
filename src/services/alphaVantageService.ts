@@ -18,7 +18,9 @@ async function fetchJson(queryParams) {
   return response.json();
 }
 
-export async function getDailyPerformance(ticker): Promise<number | null> {
+export async function getDailyPerformance(
+  ticker: string
+): Promise<number | null> {
   const json = await fetchJson({
     function: "TIME_SERIES_DAILY",
     symbol: ticker,
@@ -42,5 +44,11 @@ export async function getDailyPerformance(ticker): Promise<number | null> {
   //daily performance
   const performance = ((latestClose / previousClose - 1) * 100).toFixed(2);
 
-  return +performance;
+  const performanceNumber = parseFloat(performance);
+
+  if (isNaN(performanceNumber)) {
+    return null;
+  }
+
+  return performanceNumber;
 }

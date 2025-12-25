@@ -17,5 +17,5 @@ export async function FetchWatchlist(
   userId
 ): Promise<DbStock[] | []> {
   const { data } = supabase.from("watchlist").select("*").eq("user_id", userId);
-  return data || [];
+  return data || [{ id: "", user_id: "", symbol: "asd" }];
 }
