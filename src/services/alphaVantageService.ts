@@ -18,7 +18,7 @@ async function fetchJson(queryParams) {
   return response.json();
 }
 
-export async function getDailyPerformance(ticker) {
+export async function getDailyPerformance(ticker): Promise<number | null> {
   const json = await fetchJson({
     function: "TIME_SERIES_DAILY",
     symbol: ticker,
@@ -42,5 +42,5 @@ export async function getDailyPerformance(ticker) {
   //daily performance
   const performance = ((latestClose / previousClose - 1) * 100).toFixed(2);
 
-  return performance;
+  return +performance;
 }

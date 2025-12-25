@@ -4,20 +4,26 @@ import {
   SignedOut,
   SignInButton,
   UserButton,
+  useUser,
 } from "@clerk/clerk-react";
-import { getDailyPerformance } from "./services/alphaVantageService";
+import StockList from "./components/StockList";
 
 function App() {
-  const perf = getDailyPerformance("IBM");
-  console.log(perf);
-
+  const { user } = useUser();
   return (
     <header>
       <SignedOut>
         <SignInButton />
       </SignedOut>
       <SignedIn>
-        <UserButton />
+        {user ? (
+          <>
+            <UserButton />
+            <StockList userId={user?.id ?? null}></StockList>
+          </>
+        ) : (
+          <p>Loading user ...</p>
+        )}
       </SignedIn>
     </header>
   );
