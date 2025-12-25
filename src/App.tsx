@@ -5,8 +5,12 @@ import {
   SignInButton,
   UserButton,
 } from "@clerk/clerk-react";
+import { getDailyPerformance } from "./services/alphaVantageService";
 
 function App() {
+  const perf = getDailyPerformance("IBM");
+  console.log(perf);
+
   return (
     <header>
       <SignedOut>
